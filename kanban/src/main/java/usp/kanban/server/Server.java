@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import usp.kanban.client.Model.Message;
+import usp.kanban.server.Model.Message;
 
 /**
  * A server program which accepts requests from clients to
@@ -31,7 +31,7 @@ public class Server {
      * messages.  It is certainly not necessary to do this.
      */
     public static void main(String[] args) throws Exception {
-        System.out.println("O servidor de kanban está sendo executado.");
+        System.out.println("SERVER: O servidor de kanban esta sendo executado.");
         int clientNumber = 0;
         ServerSocket listener = new ServerSocket(9090);
         try {
@@ -51,10 +51,16 @@ public class Server {
     private static class Interpreter extends Thread {
         private Socket socket;
         private int clientNumber;
+        BufferedReader input;
+        PrintWriter out;
 
-        public Interpreter(Socket socket, int clientNumber) {
+        public Interpreter(Socket socket, int clientNumber) throws IOException {
             this.socket = socket;
             this.clientNumber = clientNumber;
+            this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.out = new PrintWriter(socket.getOutputStream(), true);
+
+            log("Nova conexao com o cliente #" + clientNumber + " em " + socket);
         }
 
         /**
@@ -63,21 +69,17 @@ public class Server {
          * and sending back the capitalized version of the string.
          */
         public void run() {
-            try {
-
-                // Decorate the streams so we can send characters
-                // and not just bytes.  Ensure output is flushed
-                // after every newline.
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            try{
+                Message greet = new Message(null, "HI", null);
+                out.write(greet.toString());
+                out.flush();
                 
-                Message greet = new Message();
-                while (true) {
-                    String input = in.readLine();
-                    out.println(input.toUpperCase());
-                }
+                log("Esperando mensagem de login");
+                Message loginMessage = ReceiveMessage();
 
-            } catch (IOException e) {
+                log("Mensagem de login recebida: \n" + loginMessage.toString());
+
+            } catch (Exception e) {
                 log("Error handling client# " + clientNumber + ": " + e);
             } finally {
                 try {
@@ -89,12 +91,25 @@ public class Server {
             }
         }
 
+        private Message ReceiveMessage() throws Exception{
+
+            String response = input.readLine();
+            if(response == null || !response.contains("LENGTH:")) return null;
+            
+            response = response.replace("LENGTH:", "");
+    
+            char[] buffer = new char[Integer.parseInt(response)];
+            input.read(buffer, 0, Integer.parseInt(response));
+            
+            return new Message(new String(buffer));
+        }
+
         /**
          * Logs a simple message.  In this case we just write the
          * message to the server applications standard output.
          */
         private void log(String message) {
-            System.out.println(message);
+            System.out.println("SERVER: " + message);
         }
     }
 }

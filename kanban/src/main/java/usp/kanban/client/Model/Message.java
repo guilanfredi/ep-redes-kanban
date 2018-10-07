@@ -29,6 +29,18 @@ public class Message{
     private String method;
     private Hashtable<String, String> body;
 
+    public Hashtable<String, String> getHeader() {
+        return this.header;
+    }
+
+    public String getMethod() {
+        return this.method;
+    }
+
+    public Hashtable<String, String> getBody() {
+        return this.body;
+    }
+
     public Message(){
         this.header = new Hashtable<>();
         this.body = new Hashtable<>();
@@ -48,11 +60,13 @@ public class Message{
         Hashtable<String, String> messageBody = new Hashtable<String, String>();
         String messageMethod = "";
 
-        if(lines[1] != "HEADER") throw new Exception("formato da mensagem inválido: HEADER");
+        int i = 0;
+        if(!lines[i].equals("HEADER")){ 
+            throw new Exception("formato da mensagem inválido: HEADER"); 
+        }
         
-        
-        int i = 2;
-        while(i < lines.length && lines[i] != ""){
+        i++;
+        while(i < lines.length && !lines[i].equals("")){
             String[] dic = lines[i].split(":");
             messageHeader.put(dic[0], dic[1]);
             i++;
@@ -62,13 +76,14 @@ public class Message{
         if(!lines[i].contains("METHOD:")) throw new Exception("formato da mensagem inválido: METHOD");
         else{
             messageMethod = lines[i].split(":")[1];
+            i++;
         }
         i++;
 
-        if(lines[i] != "BODY") throw new Exception("formato da mensagem inválido: BODY");
+        if(!lines[i].equals("BODY")) throw new Exception("formato da mensagem inválido: BODY");
 
         i++;
-        while(i < lines.length && lines[i] != ""){
+        while(i < lines.length && !lines[i].equals("")){
             String[] dic = lines[i].split(":");
             messageBody.put(dic[0], dic[1]);
             i++;

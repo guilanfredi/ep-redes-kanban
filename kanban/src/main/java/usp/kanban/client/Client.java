@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import java.util.*;
-import java.awt.*;
 import javax.swing.*;
 
 import usp.kanban.client.Model.Message;
@@ -34,22 +33,12 @@ public class Client {
         GetIPAddress();
 
         Login();
-        try{
-            while(true){
-                String answer = input.readLine();
-                
-                log("Resposta recebida\n");
-                log(answer);
-            }
-        }
-        catch(Exception ex){
-            log(ex.getMessage());
-        }
+
     }
 
     private static void Login(){
         Hashtable<String, String> loginInformation = Form.LoginForm();
-        Message message = new Message(null, "LoginOrRegister", loginInformation);
+        Message loginMessage = new Message(null, "LoginOrRegister", loginInformation);
         
         try{
             socket = new Socket(serverIP, 9090);
@@ -57,32 +46,35 @@ public class Client {
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             output = new PrintWriter(socket.getOutputStream(), true);
 
-            String response = ReceiveMessage();
-            
-            // if(!lines[0].contains("LENGTH:")) throw new Exception("formato da mensagem inválido: LENGTH");
+            Message greet = ReceiveMessage();
+            if(greet.getMethod().equals("HI")){
+                log("Recebida mensagem de conexao: " + greet.toString());
+            }
+            else{
+                return;
+            }
 
-            // Message response = new Message();
-
-            // log("Enviando mensagem de login:\n" + loginMessage.toString() + "\n");
-            // out.write(loginMessage.toString());
-            // log("Mensagem enviada");
+            log("Enviando mensagem de login:\n" + loginMessage.toString());
+            output.write(loginMessage.toString());
+            output.flush();
         }
-        catch(Exception e){}
+        catch(Exception e){
+            log(e.getMessage());
+        }
     }
 
 
-    private static String ReceiveMessage() throws Exception{
-        String response;
-        while(true){
-            response = input.readLine();
-            if(response != null && response.contains("LENGTH:")) break;
-        }
+    private static Message ReceiveMessage() throws Exception{
+
+        String response = input.readLine();
+        if(response == null || !response.contains("LENGTH:")) return null;
+        
         response = response.replace("LENGTH:", "");
 
         char[] buffer = new char[Integer.parseInt(response)];
         input.read(buffer, 0, Integer.parseInt(response));
-
-        return buffer.toString();
+        
+        return new Message(new String(buffer));
     }
 
     private static void GetIPAddress(){
