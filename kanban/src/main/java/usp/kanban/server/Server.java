@@ -6,7 +6,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Hashtable;
 
+import usp.kanban.server.BLL.CredentialBLL;
 import usp.kanban.server.Model.Message;
 
 /**
@@ -71,13 +73,20 @@ public class Server {
         public void run() {
             try{
                 Message greet = new Message(null, "HI", null);
-                out.write(greet.toString());
-                out.flush();
+                SendMessage(greet);
                 
-                log("Esperando mensagem de login");
                 Message loginMessage = ReceiveMessage();
 
-                log("Mensagem de login recebida: \n" + loginMessage.toString());
+                String guid = new CredentialBLL().LoginOrRegister(loginMessage);
+                if(guid == null){
+                    SendErrorMessage(guid);
+                }
+                else{
+                    Hashtable<String, String> messageBody = new Hashtable<String, String>();
+                    messageBody.put("guid", guid);
+                    Message sessionMessage = new Message(null, "Login", messageBody);
+                    SendMessage(sessionMessage);
+                }
 
             } catch (Exception e) {
                 log("Error handling client# " + clientNumber + ": " + e);
@@ -104,10 +113,19 @@ public class Server {
             return new Message(new String(buffer));
         }
 
-        /**
-         * Logs a simple message.  In this case we just write the
-         * message to the server applications standard output.
-         */
+        private void SendMessage(Message message){
+            out.write(message.toString());
+            out.flush();
+        }
+
+        private void SendErrorMessage(String errorMessage){
+            Hashtable<String, String> messageBody = new Hashtable<String, String>();
+            messageBody.put("message", errorMessage);
+            Message error = new Message(null, "ERROR", messageBody);
+            out.write(error.toString());
+            out.flush();
+        }
+
         private void log(String message) {
             System.out.println("SERVER: " + message);
         }

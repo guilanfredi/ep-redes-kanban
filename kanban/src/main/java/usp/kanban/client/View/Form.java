@@ -12,6 +12,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import usp.kanban.client.Cookie;
+
 public final class Form
 {
 

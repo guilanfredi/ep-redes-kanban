@@ -28,38 +28,44 @@ public class Client {
      * the date server, then connects to it and displays the date that
      * it serves.
      */
-    public static void main(String[] args) throws IOException {
-
+    public static void main(String[] args) throws Exception {
         GetIPAddress();
 
         Login();
 
     }
 
-    private static void Login(){
-        Hashtable<String, String> loginInformation = Form.LoginForm();
-        Message loginMessage = new Message(null, "LoginOrRegister", loginInformation);
-        
-        try{
-            socket = new Socket(serverIP, 9090);
+    private static void Login() throws Exception{
+        if(Cookie.readCookie("SessionID") == null){
+            Hashtable<String, String> loginInformation = Form.LoginForm();
+            Message loginMessage = new Message(null, "LoginOrRegister", loginInformation);
             
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            output = new PrintWriter(socket.getOutputStream(), true);
+            try{
+                socket = new Socket(serverIP, 9090);
+                
+                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                output = new PrintWriter(socket.getOutputStream(), true);
 
-            Message greet = ReceiveMessage();
-            if(greet.getMethod().equals("HI")){
-                log("Recebida mensagem de conexao: " + greet.toString());
-            }
-            else{
-                return;
-            }
+                Message greet = ReceiveMessage();
+                if(!greet.getMethod().equals("HI")){
+                    log("Mensagem de conexão inválida." + greet.toString());
+                    return;
+                }
 
-            log("Enviando mensagem de login:\n" + loginMessage.toString());
-            output.write(loginMessage.toString());
-            output.flush();
-        }
-        catch(Exception e){
-            log(e.getMessage());
+                SendMessage(loginMessage);
+
+                Message session = ReceiveMessage();
+
+                if(session.getMethod().equals("ERROR")){
+                    log(session.getBody().get("message"));
+                    return;
+                }
+                
+                Cookie.addSessionCookie(session.getBody().get("guid"));            
+            }
+            catch(Exception e){
+                log(e.getMessage());
+            }
         }
     }
 
@@ -77,13 +83,24 @@ public class Client {
         return new Message(new String(buffer));
     }
 
-    private static void GetIPAddress(){
-        serverIP = JOptionPane.showInputDialog(
-            "Insira o endereco de IP do computador \n" +
-            "executando o servidor na porta 9090: \n" +
-            "(ENTER para localhost)");
+    private static void SendMessage(Message message){
+        output.write(message.toString());
+        output.flush();
+    }
 
-        if(serverIP == "") serverIP = "localhost";
+    private static void GetIPAddress()throws Exception{
+        String ip = Cookie.readCookie("ServerIP");
+        if(ip != null){
+            serverIP = ip;
+        }
+        else{
+            serverIP = JOptionPane.showInputDialog(
+                "Insira o endereco de IP do computador \n" +
+                "executando o servidor na porta 9090: \n" +
+                "(ENTER para localhost)");
+
+            if(serverIP == "") serverIP = "localhost";
+        }
     }
 
     private static void log(String text){
