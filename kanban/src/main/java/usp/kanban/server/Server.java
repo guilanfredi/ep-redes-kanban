@@ -75,18 +75,13 @@ public class Server {
                 Message greet = new Message(null, "HI", null);
                 SendMessage(greet);
                 
-                Message loginMessage = ReceiveMessage();
-
-                String guid = new CredentialBLL().LoginOrRegister(loginMessage);
-                if(guid == null){
-                    SendErrorMessage(guid);
+                Message receivedMessage = ReceiveMessage();
+                switch(receivedMessage.getMethod()){
+                    case "LoginOrRegister":
+                    LoginOrRegister(receivedMessage);
+                    break;
                 }
-                else{
-                    Hashtable<String, String> messageBody = new Hashtable<String, String>();
-                    messageBody.put("guid", guid);
-                    Message sessionMessage = new Message(null, "Login", messageBody);
-                    SendMessage(sessionMessage);
-                }
+                
 
             } catch (Exception e) {
                 log("Error handling client# " + clientNumber + ": " + e);
@@ -100,13 +95,27 @@ public class Server {
             }
         }
 
-        private Message ReceiveMessage() throws Exception{
+		private void LoginOrRegister(Message receivedMessage) {
+			String guid = new CredentialBLL().LoginOrRegister(receivedMessage);
+			if(guid == null){
+			    SendErrorMessage(guid);
+			}
+			else{
+			    Hashtable<String, String> messageBody = new Hashtable<String, String>();
+			    messageBody.put("guid", guid);
+                Message sessionMessage = new Message(null, "Login", messageBody);
+                SendMessage(sessionMessage);
+            }
+        }
+
+        private Message ReceiveMessage() throws Exception {
 
             String response = input.readLine();
-            if(response == null || !response.contains("LENGTH:")) return null;
-            
+            if (response == null || !response.contains("LENGTH:"))
+                return null;
+
             response = response.replace("LENGTH:", "");
-    
+
             char[] buffer = new char[Integer.parseInt(response)];
             input.read(buffer, 0, Integer.parseInt(response));
             
