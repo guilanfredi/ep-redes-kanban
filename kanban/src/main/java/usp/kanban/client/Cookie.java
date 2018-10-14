@@ -11,13 +11,18 @@ public class Cookie{
 
     private static JSONObject cookie;
 
-    public static String readCookie(String key) throws Exception{
-        if(cookie == null) cookie = getCookie();
-        Object obj = cookie.get(key);
-        
-        if(obj == null) return null;
-        else return obj.toString();
-
+    public static String readCookie(String key){
+        try{
+            if(cookie == null) cookie = getCookie();
+            Object obj = cookie.get(key);
+            
+            if(obj == null) return null;
+            else return obj.toString();
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     private static JSONObject getCookie() throws Exception{
@@ -61,5 +66,12 @@ public class Cookie{
             file.flush();
             file.close();
         }
+    }
+
+	public static void removeSessionCookie() throws Exception{
+        if(cookie.get("SessionID") != null){
+            cookie.remove("SessionID");
+        }
+        saveCookie();
     }
 }

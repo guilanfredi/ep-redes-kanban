@@ -6,10 +6,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import usp.kanban.server.BLL.CredentialBLL;
+import usp.kanban.server.BLL.TaskBLL;
 import usp.kanban.server.Model.Message;
+import usp.kanban.server.Model.Task;
 
 /**
  * A server program which accepts requests from clients to
@@ -72,17 +75,21 @@ public class Server {
          */
         public void run() {
             try{
-                Message greet = new Message(null, "HI", null);
+                Message greet = new Message(null, "HI", new Hashtable<String,String>());
                 SendMessage(greet);
                 
-                Message receivedMessage = ReceiveMessage();
-                switch(receivedMessage.getMethod()){
-                    case "LoginOrRegister":
-                    LoginOrRegister(receivedMessage);
-                    break;
-                }
-                
+                while(true){
+                    Message receivedMessage = ReceiveMessage();
+                    switch(receivedMessage.getMethod()){
+                        case "LoginOrRegister":
+                        LoginOrRegister(receivedMessage);
+                        break;
 
+                        case "GetTasks":
+                        GetTasks(receivedMessage);
+                        break;
+                    }
+                }
             } catch (Exception e) {
                 log("Error handling client# " + clientNumber + ": " + e);
             } finally {
@@ -95,7 +102,19 @@ public class Server {
             }
         }
 
-		private void LoginOrRegister(Message receivedMessage) {
+		private void GetTasks(Message receivedMessage) {
+            boolean sessionState = new CredentialBLL().CheckSession(receivedMessage);
+            if(sessionState){
+                ArrayList<Task> result = new TaskBLL().GetTasks(receivedMessage);
+                Message tasks = new Message(null, "GetTasks", result);
+                SendMessage(tasks);
+            }
+            else{
+                SendErrorMessage("Expired Session");
+            }
+        }
+
+        private void LoginOrRegister(Message receivedMessage) {
 			String guid = new CredentialBLL().LoginOrRegister(receivedMessage);
 			if(guid == null){
 			    SendErrorMessage(guid);
@@ -103,7 +122,7 @@ public class Server {
 			else{
 			    Hashtable<String, String> messageBody = new Hashtable<String, String>();
 			    messageBody.put("guid", guid);
-                Message sessionMessage = new Message(null, "Login", messageBody);
+                Message sessionMessage = new Message(null, "LoginOrRegister", messageBody);
                 SendMessage(sessionMessage);
             }
         }

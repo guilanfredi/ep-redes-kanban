@@ -29,4 +29,19 @@ public class CredentialBLL{
         }
 
     }
+
+	public boolean CheckSession(Message receivedMessage) {
+        boolean result = CredentialDAL.existsSession(receivedMessage.getHeader().get("SessionID"));
+		return result;
+    }
+    
+    public int GetIdBySession(String SessionID){
+        int result;
+        if(CredentialDAL.existsSession(SessionID))
+            result = CredentialDAL.getIdBySession(SessionID);
+        else
+            result = -1;
+        
+            return result;
+    }
 }

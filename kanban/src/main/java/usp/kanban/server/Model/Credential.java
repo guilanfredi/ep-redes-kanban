@@ -6,6 +6,7 @@ public class Credential{
     private String login;
     private String password;
     private String guid;
+    private int id;
 
     public String getLogin() {
         return this.login;
@@ -25,6 +26,14 @@ public class Credential{
 
     public String getGuid() {
         return this.guid;
+    }
+
+    public int getId() {
+        return this.id;
+    }
+    
+    public void setId(int value) {
+        this.id = value;
     }
 
     public Credential(String login, String pass){

@@ -1,5 +1,6 @@
 package usp.kanban.server.Model;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 /*
@@ -51,6 +52,19 @@ public class Message{
         this.header = header == null ? new Hashtable<String, String>() : header;
         this.body = body == null ? new Hashtable<String, String>() : body;
         this.method = method;
+    }
+
+    public Message(Hashtable<String, String> header, String method, ArrayList<Task> body){
+        this.header = header == null ? new Hashtable<String, String>() : header;
+        this.method = method;
+
+        Hashtable<String, String> toAdd = new Hashtable<String, String>();
+        if(body != null){
+            for(int i = 0; i < body.size(); i++){
+                toAdd.put("value"+i, body.get(i).toString());
+            }
+        }
+        this.body = toAdd;
     }
 
     public Message(String content) throws Exception{

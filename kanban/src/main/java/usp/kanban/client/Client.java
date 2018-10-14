@@ -9,6 +9,7 @@ import java.util.*;
 import javax.swing.*;
 
 import usp.kanban.client.Model.Message;
+import usp.kanban.client.Model.Task;
 import usp.kanban.client.View.Form;
 
 /**
@@ -29,27 +30,57 @@ public class Client {
      */
     public static void main(String[] args) throws Exception {
         GetIPAddress();
+                
+        socket = new Socket(serverIP, 9090);
+        input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        output = new PrintWriter(socket.getOutputStream(), true);
+
+        Message greet = ReceiveMessage();
+        if(!greet.getMethod().equals("HI")){
+            log("Mensagem de conexão inválida." + greet.toString());
+            return;
+        }
+
         Login();
-        log("rodou");
+        
+        ShowTasks();
+        
     }
 
-    private static void Login() throws Exception{
+    private static void ShowTasks() {
+        Hashtable<String,String> header = new Hashtable<>();
+        header.put("SessionID", Cookie.readCookie("SessionID"));
+        Message getTasksMessage = new Message(header, "GetTasks", null);
+        SendMessage(getTasksMessage);
+        Message tasksMessage = ReceiveMessage();
+        
+        if(tasksMessage == null){
+            ShowTasks();
+            return;
+        }
+        ArrayList<Task> tasks = new ArrayList<Task>();
+        for (String value : tasksMessage.getBody().values()) {
+            String[] attrs = value.split(";");
+            
+            int id = Integer.parseInt(attrs[0].split(":")[1]);
+            int userId = Integer.parseInt(attrs[1].split(":")[1]);
+            String title = attrs[2].split(":")[1];
+            String status = attrs[3].split(":")[1];
+
+            Task task = new Task(id, userId, title, status);
+            tasks.add(task);
+        }
+        Form.PrintTasks(tasks);
+        Form.PrintMenu();
+    }
+
+    private static void Login() throws Exception {
         if(Cookie.readCookie("SessionID") == null){
             Hashtable<String, String> loginInformation = Form.LoginForm();
             Message loginMessage = new Message(null, "LoginOrRegister", loginInformation);
             
             try{
-                socket = new Socket(serverIP, 9090);
                 
-                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                output = new PrintWriter(socket.getOutputStream(), true);
-
-                Message greet = ReceiveMessage();
-                if(!greet.getMethod().equals("HI")){
-                    log("Mensagem de conexão inválida." + greet.toString());
-                    return;
-                }
-
                 SendMessage(loginMessage);
 
                 Message session = ReceiveMessage();
@@ -68,17 +99,35 @@ public class Client {
     }
 
 
-    private static Message ReceiveMessage() throws Exception{
+    private static Message ReceiveMessage(){
+        try{
+            String response = input.readLine();
+            if(response == null || !response.contains("LENGTH:")) return null;
+            
+            response = response.replace("LENGTH:", "");
 
-        String response = input.readLine();
-        if(response == null || !response.contains("LENGTH:")) return null;
-        
-        response = response.replace("LENGTH:", "");
+            char[] buffer = new char[Integer.parseInt(response)];
+            input.read(buffer, 0, Integer.parseInt(response));
+            
+            Message message = new Message(new String(buffer));
+            if(message.getMethod().equals("ERROR")){
+                switch(message.getBody().get("message")){
+                    case "Expired Session":
+                    Cookie.removeSessionCookie();
+                    Login();
+                    break;
 
-        char[] buffer = new char[Integer.parseInt(response)];
-        input.read(buffer, 0, Integer.parseInt(response));
-        
-        return new Message(new String(buffer));
+                }
+                return null;
+            }
+            else{
+                return message;
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     private static void SendMessage(Message message){

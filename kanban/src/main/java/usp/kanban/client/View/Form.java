@@ -2,7 +2,9 @@ package usp.kanban.client.View;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -11,6 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
+import usp.kanban.client.Model.Task;
 
 public final class Form
 {
@@ -43,5 +47,35 @@ public final class Form
         /* Fim do código do stackoverflow */
         
         return loginInformation;
+    }
+
+    public static void PrintTasks(ArrayList<Task> tasks) {
+        System.out.println("\nBem vindo(a), aqui estao suas tarefas:");
+        System.out.println("To Do:");
+        for (Task var : tasks.stream().filter(x -> x.getStatus().equals("To do")).collect(Collectors.toList())) {
+            System.out.println("[" + var.getId() + "] " + var.getTitle());
+        }
+        System.out.println();
+
+        System.out.println("Working:");
+        for (Task var : tasks.stream().filter(x -> x.getStatus().equals("Working")).collect(Collectors.toList())) {
+            System.out.println("[" + var.getId() + "] " + var.getTitle());
+        }
+        System.out.println();
+
+        
+        System.out.println("Done:");
+        for (Task var : tasks.stream().filter(x -> x.getStatus().equals("Done")).collect(Collectors.toList())) {
+            System.out.println("[" + var.getId() + "] " + var.getTitle());
+        }
+        System.out.println();
+    }
+
+    public static void PrintMenu(){
+        System.out.println("Selecione uma das opcoes:");
+        System.out.println("[1] - Criar tarefa");
+        System.out.println("[2] - Mover tarefa");
+        System.out.println("[0] - Logout");
+
     }
 }
