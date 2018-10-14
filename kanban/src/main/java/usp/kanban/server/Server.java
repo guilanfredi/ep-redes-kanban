@@ -140,7 +140,7 @@ public class Server {
         private void LoginOrRegister(Message receivedMessage) {
 			String guid = new CredentialBLL().LoginOrRegister(receivedMessage);
 			if(guid == null){
-			    SendErrorMessage(guid);
+			    SendErrorMessage("Invalid password");
 			}
 			else{
 			    Hashtable<String, String> messageBody = new Hashtable<String, String>();

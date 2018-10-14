@@ -27,7 +27,7 @@ public class CredentialDAL{
         if(dbList.stream().filter(x -> x.getLogin().equals(user)).count() == 0){
             return -1;
         }
-        else if(dbList.stream().filter(x -> x.getLogin().equals(user)&& x.getLogin().equals(user)).count() == 0){
+        else if(dbList.stream().filter(x -> x.getLogin().equals(user)&& x.getPassword().equals(pass)).count() == 0){
             return 0;
         }
         else{

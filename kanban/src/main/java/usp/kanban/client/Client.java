@@ -120,9 +120,7 @@ public class Client {
                 SendMessage(loginMessage);
 
                 Message session = ReceiveMessage();
-
-                if(session.getMethod().equals("ERROR")){
-                    log(session.getBody().get("message"));
+                if(session == null){
                     return;
                 }
                 
@@ -150,6 +148,12 @@ public class Client {
                 switch(message.getBody().get("message")){
                     case "Expired Session":
                     log("Sessao expirada.");
+                    Cookie.removeSessionCookie();
+                    Login();
+                    break;
+
+                    case "Invalid password":
+                    log("Senha invalida.");
                     Cookie.removeSessionCookie();
                     Login();
                     break;
