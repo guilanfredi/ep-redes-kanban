@@ -92,6 +92,10 @@ public class Server {
                         case "NewTask":
                         NewTask(receivedMessage);
                         break;
+
+                        case "UpdateTask":
+                        UpdateTask(receivedMessage);
+                        break;
                     }
                 }
             } catch (Exception e) {
@@ -106,7 +110,26 @@ public class Server {
             }
         }
 
-		private void NewTask(Message receivedMessage) {
+		private void UpdateTask(Message receivedMessage) {
+            boolean sessionState = new CredentialBLL().CheckSession(receivedMessage);
+            if(sessionState){
+                boolean success = new TaskBLL().UpdateTask(receivedMessage);
+                if(success){
+                    Hashtable<String,String> body = new Hashtable<String,String>();
+                    body.put("message", "success");
+                    Message successMessage = new Message(null, "NewTask", body);
+                    SendMessage(successMessage);
+                }
+                else{
+                    SendErrorMessage("Couldn't update event");    
+                }
+            }
+            else{
+                SendErrorMessage("Expired Session");
+            }
+        }
+
+        private void NewTask(Message receivedMessage) {
             boolean sessionState = new CredentialBLL().CheckSession(receivedMessage);
             if(sessionState){
                 boolean success = new TaskBLL().InsertTask(receivedMessage);

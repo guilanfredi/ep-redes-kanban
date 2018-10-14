@@ -30,4 +30,17 @@ public class TaskDAL{
         }
 	}
 
+	public static boolean updateTask(int userId, int taskId, String status) {
+        if(dbList.stream().filter(x -> x.getUserId() == userId && x.getId() == taskId).count() > 0){
+            Task task = dbList.stream().filter(x -> x.getUserId() == userId && x.getId() == taskId).findFirst().get();
+            task.setStatus(status);
+            dbList.removeIf(x -> x.getUserId() == userId && x.getId() == taskId);
+            dbList.add(task);
+            return true;
+        }
+        else{
+            return false;
+        }
+	}
+
 }

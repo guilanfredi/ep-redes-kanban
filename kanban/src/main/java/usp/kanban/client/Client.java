@@ -55,6 +55,12 @@ public class Client {
                 SendNewTask(newTask);
                 ShowTasks();
                 break;
+
+                case 2:
+                Hashtable<String,String> body = Form.UpdateTask();
+                SendUpdateTask(body);
+                ShowTasks();
+                break;
                 
                 case 3:
                 ShowTasks();
@@ -64,10 +70,24 @@ public class Client {
                 exit = Form.ConfirmExit();
                 Cookie.removeSessionCookie();
                 break;
+
+                default:
+                break;
+
             }
             if(exit) break;
         }
         System.exit(0);
+    }
+
+    private static void SendUpdateTask(Hashtable<String, String> body) {
+        Hashtable<String,String> header = new Hashtable<>();
+        header.put("SessionID", Cookie.readCookie("SessionID"));
+
+        Message updateTaskMessage = new Message(header, "UpdateTask", body);
+
+        SendMessage(updateTaskMessage);
+        Message message = ReceiveMessage();
     }
 
     private static void SendNewTask(String newTask) {
@@ -157,6 +177,11 @@ public class Client {
                     Cookie.removeSessionCookie();
                     Login();
                     break;
+                    
+                    case "Couldn't update event":
+                    log("Esse evento nao existe.");
+                    break;
+                    
 
                 }
                 return null;

@@ -25,4 +25,12 @@ public class TaskBLL{
 
         return TaskDAL.insertTask(task);
 	}
+
+	public boolean UpdateTask(Message receivedMessage) {
+        int taskId = Integer.parseInt(receivedMessage.getBody().get("id"));
+        String status = receivedMessage.getBody().get("status");
+        int UserId = new CredentialBLL().GetIdBySession(receivedMessage.getHeader().get("SessionID"));
+        
+        return TaskDAL.updateTask(UserId, taskId, status);
+	}
 }

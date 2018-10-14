@@ -105,9 +105,27 @@ public final class Form
     }
 
 	public static String CreateTask() {
-        System.out.println("\nSelecione um nome para a tarefa:");
+        System.out.println("\nCrie um nome para a tarefa:");
         sc.nextLine();
         String title = sc.nextLine();
         return title;
+	}
+
+	public static Hashtable<String,String> UpdateTask() {
+        System.out.println("\nQual tarefa sera mudada? (Numero)");
+        sc.nextLine();
+        int tarefa = Integer.parseInt(sc.nextLine());
+        System.out.println("\nPara qual estado ela sera enviada? (To do/Working/Done) (Case sensitive)");
+        String status = sc.nextLine();
+        while(!status.equals("To do") && !status.equals("Working") && !status.equals("Done")){
+            System.out.println("Entrada invalida.");
+            System.out.println("Para qual estado ela sera enviada? (To do/Working/Done) (Case sensitive)");
+            status = sc.nextLine();
+        }
+        Hashtable<String,String> body = new Hashtable<String,String>();
+        body.put("id", String.valueOf(tarefa));
+        body.put("status", status);
+
+        return body;
 	}
 }
