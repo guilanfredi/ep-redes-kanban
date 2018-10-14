@@ -13,4 +13,16 @@ public class TaskBLL{
         ArrayList<Task> result = TaskDAL.getTasksByUser(UserId);
         return result;
     }
+
+	public boolean InsertTask(Message receivedMessage) {
+        String title = receivedMessage.getBody().get("newTask");
+        int UserId = new CredentialBLL().GetIdBySession(receivedMessage.getHeader().get("SessionID"));
+
+        Task task = new Task();
+        task.setTitle(title);
+        task.setStatus("To do");
+        task.setUserId(UserId);
+
+        return TaskDAL.insertTask(task);
+	}
 }

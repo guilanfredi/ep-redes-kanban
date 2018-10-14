@@ -103,4 +103,11 @@ public final class Form
             return ConfirmExit(); 
         }
     }
+
+	public static String CreateTask() {
+        System.out.println("\nSelecione um nome para a tarefa:");
+        sc.nextLine();
+        String title = sc.nextLine();
+        return title;
+	}
 }

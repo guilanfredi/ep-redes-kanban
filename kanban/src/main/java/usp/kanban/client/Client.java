@@ -50,6 +50,12 @@ public class Client {
             boolean exit = false;
 
             switch(command){
+                case 1:
+                String newTask = Form.CreateTask();
+                SendNewTask(newTask);
+                ShowTasks();
+                break;
+                
                 case 3:
                 ShowTasks();
                 break;
@@ -64,7 +70,16 @@ public class Client {
         System.exit(0);
     }
 
-    private static void Logout() {
+    private static void SendNewTask(String newTask) {
+        Hashtable<String,String> header = new Hashtable<>();
+        header.put("SessionID", Cookie.readCookie("SessionID"));
+
+        Hashtable<String,String> body = new Hashtable<>();
+        body.put("newTask", newTask);
+
+        Message newTaskMessage = new Message(header, "NewTask", body);
+        SendMessage(newTaskMessage);
+        Message message = ReceiveMessage();
         
     }
 
@@ -83,10 +98,10 @@ public class Client {
         for (String value : tasksMessage.getBody().values()) {
             String[] attrs = value.split(";");
             
-            int id = Integer.parseInt(attrs[0].split(":")[1]);
-            int userId = Integer.parseInt(attrs[1].split(":")[1]);
-            String title = attrs[2].split(":")[1];
-            String status = attrs[3].split(":")[1];
+            int id = Integer.parseInt(attrs[0].split(",")[1]);
+            int userId = Integer.parseInt(attrs[1].split(",")[1]);
+            String title = attrs[2].split(",")[1];
+            String status = attrs[3].split(",")[1];
 
             Task task = new Task(id, userId, title, status);
             tasks.add(task);

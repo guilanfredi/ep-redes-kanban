@@ -88,6 +88,10 @@ public class Server {
                         case "GetTasks":
                         GetTasks(receivedMessage);
                         break;
+
+                        case "NewTask":
+                        NewTask(receivedMessage);
+                        break;
                     }
                 }
             } catch (Exception e) {
@@ -102,7 +106,26 @@ public class Server {
             }
         }
 
-		private void GetTasks(Message receivedMessage) {
+		private void NewTask(Message receivedMessage) {
+            boolean sessionState = new CredentialBLL().CheckSession(receivedMessage);
+            if(sessionState){
+                boolean success = new TaskBLL().InsertTask(receivedMessage);
+                if(success){
+                    Hashtable<String,String> body = new Hashtable<String,String>();
+                    body.put("message", "success");
+                    Message successMessage = new Message(null, "NewTask", body);
+                    SendMessage(successMessage);
+                }
+                else{
+                    SendErrorMessage("Nao foi possivel criar o evento");    
+                }
+            }
+            else{
+                SendErrorMessage("Expired Session");
+            }
+        }
+
+        private void GetTasks(Message receivedMessage) {
             boolean sessionState = new CredentialBLL().CheckSession(receivedMessage);
             if(sessionState){
                 ArrayList<Task> result = new TaskBLL().GetTasks(receivedMessage);
