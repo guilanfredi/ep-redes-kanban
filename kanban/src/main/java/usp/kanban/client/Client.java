@@ -45,6 +45,27 @@ public class Client {
         
         ShowTasks();
         
+        while(true){
+            int command = Form.PrintMenu();
+            boolean exit = false;
+
+            switch(command){
+                case 3:
+                ShowTasks();
+                break;
+                
+                case 0:
+                exit = Form.ConfirmExit();
+                Cookie.removeSessionCookie();
+                break;
+            }
+            if(exit) break;
+        }
+        System.exit(0);
+    }
+
+    private static void Logout() {
+        
     }
 
     private static void ShowTasks() {
@@ -71,7 +92,7 @@ public class Client {
             tasks.add(task);
         }
         Form.PrintTasks(tasks);
-        Form.PrintMenu();
+        
     }
 
     private static void Login() throws Exception {
@@ -113,6 +134,7 @@ public class Client {
             if(message.getMethod().equals("ERROR")){
                 switch(message.getBody().get("message")){
                     case "Expired Session":
+                    log("Sessao expirada.");
                     Cookie.removeSessionCookie();
                     Login();
                     break;

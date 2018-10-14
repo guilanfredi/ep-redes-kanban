@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
@@ -18,6 +19,7 @@ import usp.kanban.client.Model.Task;
 
 public final class Form
 {
+    static Scanner sc = new Scanner(System.in);
 
     public static Hashtable<String,String> LoginForm(){
         /*
@@ -71,11 +73,34 @@ public final class Form
         System.out.println();
     }
 
-    public static void PrintMenu(){
+    public static int PrintMenu(){
         System.out.println("Selecione uma das opcoes:");
         System.out.println("[1] - Criar tarefa");
         System.out.println("[2] - Mover tarefa");
+        System.out.println("[3] - Exibir tarefas");
         System.out.println("[0] - Logout");
 
+        String command = sc.next();
+        
+        return Integer.parseInt(command);
+    }
+
+    public static boolean ConfirmExit(){
+        System.out.println("\nTem certeza que deseja sair deste computador? (s/n)");
+        
+        String command = sc.next();
+        
+        if(command.equals("s")){
+            //Logout
+            return true;
+        }
+        else if(command.equals("n")){
+            //Volta para o menu
+            return false;
+        }
+        else{
+            //Exibe a pergunta denovo
+            return ConfirmExit(); 
+        }
     }
 }
