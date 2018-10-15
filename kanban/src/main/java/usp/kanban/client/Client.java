@@ -13,7 +13,7 @@ import usp.kanban.client.Model.Task;
 import usp.kanban.client.View.Form;
 
 /**
- * Trivial client for the date server.
+ * Classe principal do processo cliente
  */
 public class Client {
 
@@ -22,15 +22,11 @@ public class Client {
     static Socket socket;
     static BufferedReader input;
     static PrintWriter output;
-    /**
-     * Runs the client as an application.  First it displays a dialog
-     * box asking for the IP address or hostname of a host running
-     * the date server, then connects to it and displays the date that
-     * it serves.
-     */
+    
     public static void main(String[] args) throws Exception {
         GetIPAddress();
-                
+        
+        // Inicia uma nova conexão por socket na porta 9090
         socket = new Socket(serverIP, 9090);
         input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         output = new PrintWriter(socket.getOutputStream(), true);
@@ -130,6 +126,12 @@ public class Client {
         
     }
 
+    /*
+     * Método de autenticação no servidor, se existir algum cookie local usa ele,
+     * caso contrário exibe um formulário para o usuário informar um usuário e
+     * senha e envia a mensagem com esses dados ao servidor, se a resposta for
+     * positiva salva um cookie com o novo ID da Sessão.
+    */
     private static void Login() throws Exception {
         if(Cookie.readCookie("SessionID") == null){
             Hashtable<String, String> loginInformation = Form.LoginForm();
@@ -152,6 +154,15 @@ public class Client {
         }
     }
 
+    /*
+     * Aguarda o recebimento de uma mensagem, quando receber, desserializa ela.
+     * A desserialização é feita lendo a primeira linha da mensagem que contem
+     * o tamanho em caracteres do resto da mensagem, depois isso lê essa quanti-
+     * dade de caracteres.
+     * 
+     * Também trata alguns tipos de erro, se a sessão estiver expirada ou a senha
+     * for inválida, remove o cookie e executa o login novamente.
+    */
 
     private static Message ReceiveMessage(){
         try{
@@ -201,6 +212,11 @@ public class Client {
         output.flush();
     }
 
+    /**
+     * Procura o endereço de ip do servidor no arquivo cookies.json
+     * se achar, usa esse ip, caso contrário abre um form para que
+     * o usuário insira um.
+     */
     private static void GetIPAddress()throws Exception{
         String ip = Cookie.readCookie("ServerIP");
         if(ip != null){
